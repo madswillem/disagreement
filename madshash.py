@@ -5,6 +5,71 @@ from xxhash import xxh64_intdigest
 # Import the OrderedHashRemovedBuckets implementation
 from ordered_hash_removed_buckets import OrderedHashRemovedBuckets
 
+MASK_32 = 0xFFFFFFFF
+MASK_64 = 0xFFFFFFFFFFFFFFFF
+
+
+class SplitMix64:
+    def __init__(self, seed: int = 0) -> None:
+        self.state = seed & MASK_64
+
+    def reset(self, seed: int) -> None:
+        self.state = seed & MASK_64
+
+    def next_long(self) -> int:
+        self.state = (self.state + 0x9E3779B97F4A7C15) & MASK_64
+        z = self.state
+        z = ((z ^ (z >> 30)) * 0xBF58476D1CE4E5B9) & MASK_64
+        z = ((z ^ (z >> 27)) * 0x94D049BB133111EB) & MASK_64
+        return (z ^ (z >> 31)) & MASK_64
+
+
+def _floor_log2(x: int) -> int:
+    return x.bit_length() - 1
+
+
+def _mask_for_n(n: int) -> int:
+    if n <= 1:
+        return 0
+    return (1 << ((n - 1).bit_length())) - 1
+
+
+def jumpback_hash(k: int, n: int) -> int:
+    if n <= 1:
+        return 0
+
+    prg = SplitMix64(k & MASK_64)
+    v = prg.next_long()
+
+    v0 = v & MASK_32
+    v1 = (v >> 32) & MASK_32
+
+    u = (v0 ^ v1) & _mask_for_n(n)
+
+    while u != 0:
+        q = 1 << _floor_log2(u)
+        s = u.bit_count() & 1
+        if s == 0:
+            b = q + (v0 & (q - 1))
+        else:
+            b = q + (v1 & (q - 1))
+
+        while True:
+            if b < n:
+                return b
+            w = prg.next_long()
+            b = (w & MASK_32) & ((q << 1) - 1)
+            if b < q:
+                break
+            if b < n:
+                return b
+            b = ((w >> 32) & MASK_32) & ((q << 1) - 1)
+            if b < q:
+                break
+
+        u ^= q
+
+    return 0
 
 class MadsEngine:
     def __init__(self, working_set: int, capacity: int, seed: int = None):
@@ -50,7 +115,7 @@ class MadsEngine:
             Index of the bucket where the key should be mapped
         """
         # Step 1: Use consistent hashing for initial bucket selection
-        initial_bucket = xxh64_intdigest(key, self.seed) % self.capacity
+        initial_bucket = jumpback_hash(key, self.size)
         
         if not self.failed[initial_bucket]:
             return initial_bucket

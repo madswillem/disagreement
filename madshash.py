@@ -104,7 +104,7 @@ class MadsEngine:
             self.failed[b] = True
             self.removed_buckets.add(b)
     
-    def lookup(self, key: str) -> int:
+    def lookup(self, key: int) -> int:
         """
         Find a working bucket for the given key using MadsHash algorithm.
         
@@ -121,7 +121,7 @@ class MadsEngine:
             return initial_bucket
         
         # Step 2: Random fallback using key as seed for reproducibility
-        random_gen = Random(xxh64_intdigest(key, self.seed))
+        random_gen = Random(xxh64_intdigest(str(key).encode(), self.seed))
         
         while True:
             bucket = random_gen.randint(0, self.capacity - 1)
@@ -237,7 +237,8 @@ class MadsHasher:
         Returns:
             Index of the shard where the key should be mapped
         """
-        return self.engine.lookup(key)
+        k = xxh64_intdigest(key, self.seed)
+        return self.engine.lookup(k)
     
     def addShard(self, shard_id: int = None) -> int:
         """

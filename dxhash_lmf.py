@@ -31,7 +31,7 @@ class DXHashLMF():
         return (self._a * r + self._c) % self._m
 
     # Function Lookup(k)
-    def getShard(self, record_id: str) -> int:
+    def lookup(self, record_id: str) -> int:
         """Find a working (active) node for a given key."""
         # Initialize r as an integer derived from the record_id
         r=xxh64_intdigest(record_id, self.seed)
@@ -42,7 +42,7 @@ class DXHashLMF():
                 return nID
 
     # Function AddNode()
-    def addShard(self, shard_id: int = None):
+    def add(self, shard_id: int = None):
         """Find an inactive node and activate it."""
         r=xxh64_intdigest(shard_id, self.seed)
         while True:
@@ -53,7 +53,7 @@ class DXHashLMF():
                 return 
 
     # Function RmNode(nID)
-    def dropShard(self, shard_id: int):
+    def remove(self, shard_id: int):
         """Deactivate the given node and push it back into IQueue."""
         if self.NSArray[shard_id] == 0:
             return  # already inactive
@@ -90,8 +90,7 @@ class DxHasher:
         )
 
     def getShard(self, key: str) -> int:
-        k = xxh64_intdigest(key, self.seed)
-        return self.dx.lookup(k)
+        return self.dx.lookup(key)
 
     def addShard(self, shard_id: Optional[int] = None) -> int:
         if self.dx.n == self.capacity and not self.dx.R:

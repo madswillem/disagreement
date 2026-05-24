@@ -99,7 +99,7 @@ class AnchorHash:
         return b
 
 class AnchorHasher():
-    def __init__(self, working_set: List[str], capacity: int, seed: int) -> None:
+    def __init__(self, working_set: int, capacity: int, seed: int) -> None:
         """Creates an AnchorHash Object
 
         Args:
@@ -115,12 +115,10 @@ class AnchorHasher():
         else:
             self.seed = seed
         
-        if len(working_set) < 1:
+        if working_set < 1:
             raise ValueError("Must have at least one working resource")
-        w = len(working_set)
+        w = working_set
         a = capacity
-        self.M = working_set + ["" for _ in range(w, a)]
-        self.M_inverse = dict([(resource, bucket) for (bucket, resource) in enumerate(self.M[:w])])
         self.anchor = AnchorHash(a=a, w=w)
         self.name = "AnchorHash (w={w}, a={a})".format(w=w, a=a)
     

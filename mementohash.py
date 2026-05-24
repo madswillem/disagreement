@@ -138,8 +138,8 @@ class MementoHash:
         return b
 
 class MementoHasher:
-    def __init__(self, working_set, capacity: int, seed: Optional[int] = None) -> None:
-        if len(working_set) < 1:
+    def __init__(self, working_set: int, capacity: int, seed: Optional[int] = None) -> None:
+        if working_set < 1:
             raise ValueError("Must have at least one working resource")
 
         if seed is None:
@@ -147,7 +147,7 @@ class MementoHasher:
         self.seed = int(seed) & MASK_64
 
         self.capacity = int(capacity)
-        self.working_set_size = int(len(working_set))
+        self.working_set_size = int(working_set)
 
         if self.capacity < self.working_set_size:
             raise ValueError("Capacity must be >= working set size")

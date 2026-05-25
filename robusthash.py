@@ -71,10 +71,10 @@ def jumpback_hash(k: int, n: int) -> int:
 
     return 0
 
-class MadsEngine:
+class RobustEngine:
     def __init__(self, working_set: int, capacity: int, seed: int = None):
         """
-        Initialize MadsHash engine.
+        Initialize RobustHash engine.
         
         Args:
             working_set: Number of initially working buckets
@@ -106,11 +106,11 @@ class MadsEngine:
     
     def lookup(self, key: int) -> int:
         """
-        Find a working bucket for the given key using MadsHash algorithm.
+        Find a working bucket for the given key using RobustHash algorithm.
         
         Args:
             key: The key to hash
-            
+        
         Returns:
             Index of the bucket where the key should be mapped
         """
@@ -194,9 +194,9 @@ class MadsEngine:
         self.capacity = new_capacity
 
 
-class MadsHasher:
+class RobustHasher:
     """
-    Wrapper class for MadsHash algorithm providing consistent interface.
+    Wrapper class for RobustHash algorithm providing consistent interface.
     
     This class follows the same interface pattern as other consistent hashing
     implementations in this directory (DXHash, AnchorHash, MementoHash).
@@ -204,7 +204,7 @@ class MadsHasher:
     
     def __init__(self, working_set: int, capacity: int, seed: int = None):
         """
-        Initialize MadsHash consistent hashing.
+        Initialize RobustHash consistent hashing.
         
         Args:
             working_set: Number of initially working resources
@@ -223,9 +223,9 @@ class MadsHasher:
         self.working_set_size = int(working_set)
         self.capacity = int(capacity)
         
-        self.engine = MadsEngine(working_set, capacity, seed)
+        self.engine = RobustEngine(working_set, capacity, seed)
         
-        self.name = f"MadsHash (w={working_set}, a={capacity})"
+        self.name = f"RobustHash (w={working_set}, a={capacity})"
     
     def getShard(self, key: str) -> int:
         """
@@ -270,16 +270,16 @@ class MadsHasher:
 
 
 # For backward compatibility and easier testing
-def create_mads_hasher(working_set: int, capacity: int, seed: int = None) -> MadsHasher:
+def create_robust_hasher(working_set: int, capacity: int, seed: int = None) -> RobustHasher:
     """
-    Factory function to create a MadsHasher instance.
+    Factory function to create a RobustHasher instance.
     
     Args:
         working_set: Number of initially working resources
         capacity: Overall capacity
         seed: Random seed
-        
+    
     Returns:
-        Configured MadsHasher instance
+        Configured RobustHasher instance
     """
-    return MadsHasher(working_set, capacity, seed)
+    return RobustHasher(working_set, capacity, seed)
